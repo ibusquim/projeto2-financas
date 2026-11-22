@@ -11,6 +11,14 @@ import { carregarAmbiente } from './ambiente.js';
 
 const { Pool } = pg;
 
+/**
+ * O driver `pg` devolve BIGINT (OID 20) como string, para nao perder precisao.
+ * Nossos ids sao BIGSERIAL e cabem em Number, entao convertemos para que a API
+ * entregue `id` como numero, conforme o contrato. NUMERIC (OID 1700) continua
+ * vindo como string de proposito: dinheiro nunca passa por float.
+ */
+pg.types.setTypeParser(20, (valor) => Number(valor));
+
 let pool = null;
 let ambienteCache = null;
 

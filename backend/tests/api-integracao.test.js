@@ -184,6 +184,7 @@ test('/auth/me devolve usuario sem senha_hash', async (t) => {
 
   assert.equal(resposta.status, 200);
   assert.equal(resposta.body.email, USUARIO_A.email);
+  assert.equal(typeof resposta.body.id, 'number', 'id deve ser numero no JSON, nao string');
   assert.equal('senha_hash' in resposta.body, false);
   assert.equal('senhaHash' in resposta.body, false);
 });
