@@ -1,0 +1,156 @@
+:root {
+  --cor-fundo: #f4f6fb;
+  --cor-superficie: #ffffff;
+  --cor-superficie-alt: #eef2f9;
+  --cor-borda: #dbe2ee;
+  --cor-texto: #1f2937;
+  --cor-texto-suave: #5b6b84;
+  --cor-primaria: #1f4fbf;
+  --cor-primaria-escura: #173c92;
+  --cor-primaria-suave: #e6edff;
+  --cor-positiva: #157347;
+  --cor-negativa: #b42318;
+  --sombra: 0 10px 30px rgba(15, 35, 75, 0.08);
+  --raio: 14px;
+  --fonte: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  font-family: var(--fonte);
+  color: var(--cor-texto);
+  background-color: var(--cor-fundo);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  line-height: 1.2;
+  color: var(--cor-texto);
+}
+
+p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--cor-primaria);
+}
+
+a:hover {
+  color: var(--cor-primaria-escura);
+}
+
+:focus-visible {
+  outline: 3px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.pular-para-conteudo {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--cor-primaria);
+  color: #ffffff;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.pular-para-conteudo:focus {
+  top: 12px;
+  color: #ffffff;
+}
+
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.pagina__cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pagina__titulo {
+  font-size: 1.7rem;
+}
+
+.pagina__descricao {
+  color: var(--cor-texto-suave);
+  max-width: 70ch;
+}
+
+.cartao {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 22px;
+  box-shadow: var(--sombra);
+}
+
+.tela-auth {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top, #e8efff 0%, transparent 55%),
+    var(--cor-fundo);
+}
+
+.tela-auth__cartao {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tela-auth__rodape {
+  margin-top: 6px;
+  font-size: 0.92rem;
+  color: var(--cor-texto-suave);
+}
+
+.tela-erro__codigo {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cor-primaria);
+}
+
+@media (max-width: 640px) {
+  .pagina__titulo {
+    font-size: 1.4rem;
+  }
+
+  .cartao {
+    padding: 18px;
+  }
+}

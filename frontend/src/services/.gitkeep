@@ -1,0 +1,2 @@
+# Mantem a pasta services no Git antes da criacao do cliente HTTP.
+# Remover quando api.js existir.
