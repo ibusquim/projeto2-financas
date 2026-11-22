@@ -1,0 +1,174 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  background: var(--cor-fundo);
+}
+
+.menu-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px 18px;
+  background: #10213f;
+  color: #e8eefc;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.menu-lateral__marca {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-lateral__marca strong {
+  font-size: 1.1rem;
+  letter-spacing: 0.2px;
+  color: #ffffff;
+}
+
+.menu-lateral__marca span {
+  font-size: 0.8rem;
+  color: #9fb2d6;
+}
+
+.menu-lateral__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.menu-lateral__rotulo {
+  margin: 8px 10px 4px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8ea4cd;
+}
+
+.menu-lateral__link {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 9px;
+  color: #cfdcf5;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.menu-lateral__link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.menu-lateral__link.ativo {
+  background: var(--cor-primaria);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.app-principal {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.app-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 32px;
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom: 1px solid var(--cor-borda);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+
+.app-topo__titulo {
+  font-size: 0.95rem;
+  color: var(--cor-texto-suave);
+}
+
+.app-topo__selo {
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria-escura);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.app-topo__usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-topo__nome {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+.app-conteudo {
+  padding: 32px;
+}
+
+@media (max-width: 900px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-lateral {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    overflow-x: auto;
+  }
+
+  .menu-lateral__marca {
+    display: none;
+  }
+
+  .menu-lateral__grupo {
+    flex-direction: row;
+    gap: 4px;
+    margin-bottom: 0;
+  }
+
+  .menu-lateral__rotulo {
+    display: none;
+  }
+
+  .menu-lateral__link {
+    white-space: nowrap;
+  }
+
+  .app-topo,
+  .app-conteudo {
+    padding-inline: 18px;
+  }
+
+  .app-conteudo {
+    padding-block: 24px;
+  }
+
+  .app-topo__nome {
+    display: none;
+  }
+}
