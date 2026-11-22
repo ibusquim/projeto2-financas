@@ -9,6 +9,7 @@ import categoriasRotas from './categorias.routes.js';
 import fontesDestinosRotas from './fontesDestinos.routes.js';
 import lancamentosRotas from './lancamentos.routes.js';
 import relatoriosRotas from './relatorios.routes.js';
+import saudeFinanceiraRotas from './saudeFinanceira.routes.js';
 
 const rotas = Router();
 
@@ -26,5 +27,6 @@ rotas.use('/categorias', categoriasRotas);
 rotas.use('/fontes-destinos', fontesDestinosRotas);
 rotas.use('/lancamentos', lancamentosRotas);
 rotas.use('/relatorios', relatoriosRotas);
+rotas.use('/saude-financeira', saudeFinanceiraRotas);
 
 export default rotas;

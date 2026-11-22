@@ -476,6 +476,107 @@ test('previsao de faturas devolve pelo menos tres faturas com itens', async (t) 
   assert.ok(cartao.faturas.every((fatura) => fatura.fechamento && fatura.vencimento && fatura.mesReferencia));
 });
 
+test('saude financeira devolve pelo menos tres indicadores, projecao, dicas e aviso', async (t) => {
+  if (!DISPONIVEL) return t.skip('banco indisponivel');
+  await garantirUsuarios();
+  await prepararDadosDoUsuarioA();
+
+  const resposta = await request(app).get('/api/saude-financeira').set(authA());
+
+  assert.equal(resposta.status, 200);
+  assert.ok(resposta.body.indicadores.length >= 3, 'minimo de tres indicadores');
+  assert.ok(resposta.body.indicadores.every((item) => item.chave && item.titulo && item.unidade));
+  assert.ok(Array.isArray(resposta.body.projecao));
+  assert.ok(resposta.body.projecao.length >= 3, 'projecao com pelo menos tres meses');
+  assert.ok(Array.isArray(resposta.body.dicas) && resposta.body.dicas.length > 0);
+  assert.ok(resposta.body.aviso.includes('nao constituem recomendacao financeira profissional'));
+  assert.ok(resposta.body.rendaMediaMensal, 'deve trazer renda media');
+});
+
+test('saude financeira respeita isolamento entre usuarios', async (t) => {
+  if (!DISPONIVEL) return t.skip('banco indisponivel');
+  await garantirUsuarios();
+  await prepararDadosDoUsuarioA();
+
+  const respostaB = await request(app).get('/api/saude-financeira').set(authB());
+
+  assert.equal(respostaB.status, 200);
+  assert.equal(respostaB.body.rendaMediaMensal, '0.00', 'usuario B nao pode ver renda do A');
+  assert.equal(respostaB.body.historico.length, 0);
+  assert.deepEqual(respostaB.body.categoriasForaDaCurva, []);
+});
+
+test('parcelamento com valor menor que o numero de parcelas responde 400', async (t) => {
+  if (!DISPONIVEL) return t.skip('banco indisponivel');
+  await garantirUsuarios();
+  await prepararDadosDoUsuarioA();
+
+  const resposta = await request(app).post('/api/lancamentos').set(authA()).send({
+    tipo: 'saida',
+    descricao: 'Centavos insuficientes',
+    valor: '0.02',
+    data: hojeIso(),
+    categoriaId: contexto.categoriaA.id,
+    fonteDestinoId: contexto.cartaoA.id,
+    parcelas: 3,
+  });
+
+  assert.equal(resposta.status, 400);
+  assert.ok(resposta.body.campos.parcelas);
+});
+
+test('editar uma parcela de compra parcelada responde 400 com orientacao', async (t) => {
+  if (!DISPONIVEL) return t.skip('banco indisponivel');
+  await garantirUsuarios();
+  await prepararDadosDoUsuarioA();
+
+  const compra = await request(app).post('/api/lancamentos').set(authA()).send({
+    tipo: 'saida',
+    descricao: 'Parcelada para edicao',
+    valor: '30.00',
+    data: hojeIso(),
+    categoriaId: contexto.categoriaA.id,
+    fonteDestinoId: contexto.cartaoA.id,
+    parcelas: 3,
+  });
+  assert.equal(compra.status, 201);
+
+  const resposta = await request(app)
+    .put(`/api/lancamentos/${compra.body.parcelas[0].id}`)
+    .set(authA())
+    .send({
+      tipo: 'saida',
+      descricao: 'Tentativa',
+      valor: '10.00',
+      data: hojeIso(),
+      categoriaId: contexto.categoriaA.id,
+      fonteDestinoId: contexto.cartaoA.id,
+    });
+
+  assert.equal(resposta.status, 400);
+  assert.ok(resposta.body.campos.id);
+
+  await request(app)
+    .delete(`/api/lancamentos/${compra.body.parcelas[0].id}`)
+    .query({ escopo: 'grupo' })
+    .set(authA());
+});
+
+test('cartao recem-criado mostra a fatura corrente vazia', async (t) => {
+  if (!DISPONIVEL) return t.skip('banco indisponivel');
+  await garantirUsuarios();
+  await prepararDadosDoUsuarioA();
+
+  const resposta = await request(app)
+    .get('/api/relatorios/faturas')
+    .query({ cartaoId: contexto.cartaoA.id })
+    .set(authA());
+
+  assert.equal(resposta.status, 200);
+  const cartao = resposta.body.cartoes[0];
+  assert.ok(cartao.faturas.length >= 1, 'fatura corrente deve aparecer mesmo vazia');
+});
+
 test('consultar fatura de cartao de outro usuario nao vaza dados', async (t) => {
   if (!DISPONIVEL) return t.skip('banco indisponivel');
   await garantirUsuarios();

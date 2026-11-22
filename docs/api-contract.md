@@ -473,9 +473,25 @@ Exemplos de referência verificados nos testes automatizados:
 
 ---
 
-## 9. Desafio opcional — saúde financeira
+## 9. Desafio — saúde financeira
 
-`GET /api/saude-financeira` (somente após todos os requisitos obrigatórios estarem concluídos e testados).
+`GET /api/saude-financeira` — exige JWT. Nenhum parâmetro. Todos os números são calculados no servidor; o front apenas formata.
+
+Período analisado: os 3 meses realizados mais recentes (incluindo o corrente), considerando somente lançamentos com data até hoje. Parcelas futuras entram na projeção, nunca no histórico.
+
+### Regras dos indicadores
+
+| Indicador | Cálculo | Classificações |
+|---|---|---|
+| `taxaPoupanca` | `(entradas − saídas) ÷ entradas` | `otima ≥ 20%`, `boa ≥ 10%`, `baixa ≥ 0%`, `critica < 0%` |
+| `comprometimentoCartoes` | `faturas não vencidas ÷ renda média mensal` | `saudavel ≤ 30%`, `atencao ≤ 50%`, `critico > 50%` |
+| `parcelasFuturas` | soma das parcelas de cartão a vencer | `atencao` quando supera a renda média |
+| `projecaoSaldo` | média de entradas e saídas + parcelas conhecidas, 6 meses | `saudavel`, `atencao`, `critica` |
+| `categoriaForaDaCurva` | gasto do mês ÷ média dos 3 anteriores, limiar de 20% | `atencao` quando há categoria acima |
+
+Campos da resposta: `geradoEm`, `aviso`, `periodosAnalisados`, `rendaMediaMensal`, `despesaMediaMensal`, `indicadores[]`, `historico[]`, `projecao[]`, `categoriasForaDaCurva[]`, `categoriasComparadas[]`, `limiteCartoesUtilizado` e `dicas[]`.
+
+O campo `aviso` é sempre devolvido e deve aparecer de forma visível na interface. O isolamento por usuário vale para todos os números.
 
 ```json
 {

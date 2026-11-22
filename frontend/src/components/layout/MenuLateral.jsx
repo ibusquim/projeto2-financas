@@ -11,6 +11,7 @@ const ITENS_ANALISES = [
   { para: '/relatorios/categorias', rotulo: 'Por categoria' },
   { para: '/relatorios/fontes-destinos', rotulo: 'Por fonte/destino' },
   { para: '/faturas', rotulo: 'Faturas' },
+  { para: '/saude-financeira', rotulo: 'Saude financeira' },
 ]
 
 const classeDoLink = ({ isActive }) =>
