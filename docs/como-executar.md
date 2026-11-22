@@ -70,7 +70,8 @@ A API lê a configuração de um arquivo `.env`, que não é versionado. O model
 
 ```bash
 cd backend
-copy .env.example .env
+copy .env.example .env     # Windows (cmd)
+cp .env.example .env       # macOS / Linux
 ```
 
 As variáveis e seus significados:
