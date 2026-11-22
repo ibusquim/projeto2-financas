@@ -1,6 +1,6 @@
 # Projeto 2 Full Stack — Controle Financeiro Pessoal
 
-Aplicação web de controle financeiro pessoal com front-end SPA em React e back-end próprio em Node.js + Express, persistência real em banco de dados e autenticação por JWT.
+Aplicação web de controle financeiro pessoal com front-end SPA em React e back-end próprio em **Node.js + Express + PostgreSQL**, autenticação **JWT** e persistência real.
 
 **Disciplina:** Programação Web Full Stack — Engenharia de Software
 **Integrantes:** Igor (back-end) e Rafael (front-end)
@@ -9,102 +9,118 @@ Aplicação web de controle financeiro pessoal com front-end SPA em React e back
 
 ## 1. O que a aplicação faz
 
-O usuário se cadastra, entra no sistema e registra movimentações financeiras. Cada lançamento é uma **entrada** ou **saída**, tem uma **categoria** e está associado a uma **fonte/destino** (renda, conta ou cartão de crédito). O sistema oferece:
+O usuário se cadastra, entra no sistema e registra movimentações. Cada lançamento é uma **entrada** ou **saída**, tem uma **categoria** e está associado a uma **fonte/destino** (renda, conta ou cartão de crédito).
 
 - CRUD de categorias e de fontes/destinos, isolados por usuário.
 - CRUD de lançamentos com filtros por período, tipo, categoria e fonte/destino, paginação e totais.
-- Compra parcelada em cartão de crédito, com divisão exata dos centavos.
-- Relatório por categoria, com percentual e comparação com o período anterior.
-- Relatório por fonte/destino, com saldo por conta.
-- Previsão de faturas de cartão, considerando fechamento, vencimento, parcelas futuras e limite utilizado.
+- Compra parcelada em cartão, com divisão exata dos centavos.
+- Relatório por categoria com percentual e comparação ao período anterior.
+- Relatório por fonte/destino com saldo por conta.
+- Previsão de faturas de cartão com fechamento, vencimento, parcelas futuras e limite utilizado.
 
 ---
 
-## 2. Arquitetura
+## 2. Status atual
 
-```text
-Navegador
-   |
-   | React SPA / HTTP + JSON
-   v
-Frontend (Vite + React)
-   |
-   | Authorization: Bearer <JWT>
-   v
-Backend (Node.js + Express, API REST)
-   |
-   | consultas parametrizadas / pool
-   v
-Banco de dados persistente
-```
-
-O front-end nunca acessa o banco. Toda validação, autorização, isolamento por usuário e cálculo de relatórios e faturas acontece no back-end. O `usuario_id` vem sempre do JWT, nunca do corpo ou da URL da requisição.
+| Item | Situação |
+|---|---|
+| Estrutura do back-end (sem `controllers`) | Concluída |
+| Banco modelado, migrations e seed | Escritos, execução depende do PostgreSQL |
+| Express, CORS, erros centralizados, rate limit | Concluídos |
+| Cadastro, login, JWT e middleware de autenticação | Concluídos |
+| Isolamento por usuário em todas as rotas | Implementado |
+| CRUDs de categorias, fontes/destinos e lançamentos | Concluídos |
+| Parcelamento transacional com centavos exatos | Concluído |
+| Relatórios e previsão de faturas | Concluídos |
+| Testes unitários e de fumaça HTTP | **93 passando, 0 falhando** |
+| Testes de integração com banco | 19 escritos, aguardando credenciais do PostgreSQL |
+| Front-end | Responsabilidade do Rafael |
 
 ---
 
-## 3. Estrutura de pastas
+## 3. Tecnologias
+
+**Back-end:** Node.js 20+, Express 5, PostgreSQL (driver `pg` com pool), `bcryptjs` (hash + salt), `jsonwebtoken`, `express-rate-limit`, `cors`, `dotenv`. Testes com `node:test` + `supertest`.
+
+**Front-end:** React + Vite + `react-router-dom` + `recharts` (responsabilidade do Rafael).
+
+---
+
+## 4. Estrutura do repositório
 
 ```text
 projeto2-fullstack/
 ├── README.md
-├── .gitignore
 ├── docs/
-│   └── api-contract.md          # contrato da API para o front-end
+│   ├── api-contract.md        # contrato completo para o front-end
+│   ├── modelagem-dados.md     # modelo, restrições e justificativas
+│   └── status-backend.md       # auditoria do que está pronto
 ├── plans/
-│   └── proposta-tecnica.md      # opções técnicas e solicitação ao professor
+│   └── proposta-tecnica.md
 ├── backend/
 │   ├── package.json
 │   ├── .env.example
 │   ├── database/
-│   │   ├── migrations/          # DDL versionado
-│   │   └── seed/                # dados de demonstração
-│   ├── tests/                   # testes automatizados (node:test)
+│   │   ├── criar-banco.js      # cria o banco se não existir
+│   │   ├── migrar.js           # runner de migrations em SQL puro
+│   │   ├── migrations/001_schema.sql
+│   │   └── seed/seed.js        # 2 usuários e 3 meses de lançamentos
+│   ├── tests/
 │   └── src/
 │       ├── server.js
-│       ├── routes/              # rotas + controladores
-│       ├── models/              # único ponto de acesso ao banco
-│       ├── middlewares/         # autenticação, validação, erros
-│       └── config/              # variáveis de ambiente e pool
-└── frontend/                    # responsabilidade do Rafael
+│       ├── config/             # ambiente e pool de conexão
+│       ├── middlewares/        # JWT, rate limit, validadores, erros
+│       ├── models/             # único ponto de acesso ao banco
+│       └── routes/             # rotas + controladores
+└── frontend/                   # responsabilidade do Rafael
 ```
 
-Não existe `backend/src/controllers`: os controladores ficam nos arquivos de rotas, conforme a estrutura exigida pelo enunciado.
-
----
-
-## 4. Tecnologias
-
-| Camada | Tecnologia | Situação |
-|---|---|---|
-| Back-end | Node.js 20+ / Express | Aguardando aprovação do professor |
-| Banco | PostgreSQL, driver `pg`, SQL puro com pool | Aguardando aprovação do professor |
-| Autenticação | JWT (`jsonwebtoken`) + hash de senha (`bcryptjs`) | Aguardando aprovação do professor |
-| Segurança HTTP | `cors`, `express-rate-limit`, `dotenv` | Aguardando aprovação do professor |
-| Testes back-end | `node:test` nativo + `supertest` | `node:test` já em uso |
-| Front-end | React + Vite + `react-router-dom` + `recharts` | Responsabilidade do Rafael |
-
-As decisões e a justificativa de cada escolha estão em `plans/proposta-tecnica.md`. **Nenhuma dependência é instalada antes da aprovação do professor.**
+Não existe `backend/src/controllers`: os controladores ficam nos arquivos de rotas, conforme o enunciado.
 
 ---
 
 ## 5. Pré-requisitos
 
-- Node.js 20 ou superior (o projeto foi validado com Node 24).
-- npm 10 ou superior.
-- PostgreSQL instalado localmente (serviço detectado na máquina de desenvolvimento).
+- Node.js 20+ (validado com Node 24)
+- PostgreSQL 15 ou 17 rodando localmente
+- npm 10+
 
 ---
 
-## 6. How to run — back-end (após aprovação das dependências)
+## 6. Como executar o back-end
 
 ```bash
 cd backend
 npm install
-cp .env.example .env        # preencher as variáveis, nunca versionar o .env
-npm run criar-banco         # cria banco e aplica as migrations
-npm run seed                # carrega dados de demonstração
-npm run dev                 # sobe a API em http://localhost:3000
+
+# copie o arquivo de exemplo e preencha com os valores locais
+cp .env.example .env
+# edite DB_PASSWORD e gere um JWT_SECRET forte:
+#   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+
+# cria o banco, aplica as migrations e carrega os dados de demonstração
+npm run db:preparar
+
+# sobe a API em http://localhost:3000/api
+npm run dev
 ```
+
+Health check: `GET http://localhost:3000/api/health`
+
+### Variáveis de ambiente
+
+| Variável | Descrição |
+|---|---|
+| `PORT` | Porta da API (padrão `3000`) |
+| `CORS_ORIGIN` | Origem autorizada do front-end (padrão `http://localhost:5173`) |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexão PostgreSQL |
+| `JWT_SECRET` | Segredo do JWT, mínimo de 32 caracteres |
+| `JWT_EXPIRACAO` | Validade do token (padrão `2h`) |
+| `LOGIN_MAX_TENTATIVAS`, `LOGIN_JANELA_MINUTOS` | Rate limit do login |
+
+O arquivo `.env` **nunca** é versionado. O `.env.example` não contém segredos reais.
+
+---
 
 ## 7. Como executar os testes
 
@@ -113,50 +129,111 @@ cd backend
 npm test
 ```
 
-Os testes usam o executor nativo `node:test`, sem dependências externas. Hoje já cobrem as regras puras de negócio:
-
-- validação de CPF, e-mail, senha, valor, data e cartão;
-- divisão de valores em parcelas, com centavos exatos;
-- cálculo de fechamento, vencimento e mês de referência de cada fatura.
+- Testes puros de regra de negócio e de fumaça HTTP rodam sempre.
+- Testes de integração com banco rodam quando o PostgreSQL estiver acessível; caso contrário são marcados como `skipped`, para não confundir falta de ambiente com bug.
 
 ---
 
 ## 8. Dados de demonstração
 
-O seed cria dois usuários e pelo menos três meses de lançamentos, incluindo uma compra parcelada em cartão de crédito. As credenciais de demonstração serão documentadas aqui quando o seed for implementado (sem credenciais reais de terceiros).
+`npm run db:seed` cria (e recria, de forma idempotente) dois usuários:
 
----
-
-## 9. Contrato da API
-
-O contrato completo, pronto para consumo pelo front-end, está em [`docs/api-contract.md`](docs/api-contract.md). Ele descreve método, URL, autenticação, parâmetros, corpo, resposta, códigos de erro e regras de autorização de cada endpoint.
-
----
-
-## 10. Status atual
-
-| Item | Situação |
+| E-mail | Senha |
 |---|---|
-| Repositório protegido (documentos internos fora do Git) | Concluído |
-| Labels e primeiras Issues | Concluído |
-| Documentação e contrato da API | Concluído |
-| Regras puras de negócio + testes automatizados | Concluído |
-| Aprovação de banco e bibliotecas | **Aguardando o professor** |
-| Modelagem e criação do banco | Bloqueado pela aprovação |
-| Cadastro, login, JWT e rate limit | Bloqueado pela aprovação |
-| CRUDs, relatórios e faturas via HTTP | Bloqueado pela aprovação |
+| `igor.demo@exemplo.com` | `senha1234` |
+| `rafael.demo@exemplo.com` | `senha1234` |
+
+Cada um recebe as categorias padrão, uma `Conta corrente`, um cartão `Cartao Visa Demo` (fecha dia 25, vence dia 5, limite R$ 5.000,00), três meses de lançamentos e uma compra parcelada de R$ 3.000,00 em 3x.
 
 ---
 
-## 11. Regras de segurança aplicadas no back-end
+## 9. Endpoints
 
-- Senha nunca armazenada em texto puro: apenas hash com salt.
-- `senha_hash` nunca retornado em nenhuma resposta.
-- JWT com expiração; token ausente, inválido ou expirado resulta em `401`.
-- Toda consulta protegida filtra por `usuario_id` obtido do token.
-- Registro de outro usuário responde `404`, sem revelar existência.
-- Consultas SQL sempre parametrizadas.
-- Unicidade de e-mail e de CPF garantida por restrição do banco.
-- CORS restrito à origem do front-end.
+Todas as rotas exigem `Authorization: Bearer <token>`, exceto cadastro, login e health.
+
+| Método | Rota | Função |
+|---|---|---|
+| GET | `/api/health` | Health check público |
+| POST | `/api/auth/cadastro` | Cadastro + dados padrão |
+| POST | `/api/auth/login` | Login e emissão de JWT |
+| GET | `/api/auth/me` | Usuário do token |
+| GET / POST | `/api/categorias` | Listar / criar |
+| PUT / DELETE | `/api/categorias/:id` | Editar / excluir |
+| GET / POST | `/api/fontes-destinos` | Listar / criar |
+| PUT / DELETE | `/api/fontes-destinos/:id` | Editar / excluir |
+| GET | `/api/lancamentos` | Listar com filtros, paginação e totais |
+| POST | `/api/lancamentos` | Criar simples ou parcelado |
+| GET / PUT / DELETE | `/api/lancamentos/:id` | Detalhar / editar / excluir |
+| GET | `/api/relatorios/categorias` | Relatório por categoria |
+| GET | `/api/relatorios/fontes-destinos` | Relatório por fonte/destino |
+| GET | `/api/relatorios/faturas?meses=3` | Previsão de faturas |
+
+Contrato detalhado, com corpos, exemplos e códigos de erro: [`docs/api-contract.md`](docs/api-contract.md).
+
+### Exemplo de uso
+
+```bash
+# cadastro
+curl -X POST http://localhost:3000/api/auth/cadastro \
+  -H "Content-Type: application/json" \
+  -d '{"nome":"Igor","email":"igor@exemplo.com","cpf":"529.982.247-25","senha":"senha1234","confirmacaoSenha":"senha1234"}'
+
+# login (guarde o token)
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"igor@exemplo.com","senha":"senha1234"}'
+
+# compra parcelada de R$ 100,00 em 3x
+curl -X POST http://localhost:3000/api/lancamentos \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"tipo":"saida","descricao":"Notebook","valor":"100.00","data":"2026-11-22","categoriaId":4,"fonteDestinoId":3,"parcelas":3}'
+```
+
+Resposta da compra parcelada:
+
+```json
+{
+  "grupoParcelamento": "9f2c1d8e-3b4a-4c5d-8e7f-1a2b3c4d5e6f",
+  "totalParcelas": 3,
+  "valorTotal": "100.00",
+  "parcelas": [
+    { "id": 42, "parcelaAtual": 1, "valor": "33.34", "valorCentavos": 3334, "data": "2026-11-22" },
+    { "id": 43, "parcelaAtual": 2, "valor": "33.33", "valorCentavos": 3333, "data": "2026-12-22" },
+    { "id": 44, "parcelaAtual": 3, "valor": "33.33", "valorCentavos": 3333, "data": "2027-01-22" }
+  ]
+}
+```
+
+---
+
+## 10. Regras de negócio implementadas
+
+**Parcelamento:** valor dividido em centavos inteiros, com a diferença de arredondamento toda na primeira parcela; soma sempre igual ao valor original; só permitido quando a fonte/destino é cartão de crédito; 1 a 48 parcelas; todas gravadas em uma transação.
+
+**Faturas:** compra antes do fechamento entra na fatura que fecha no mesmo mês; compra no dia do fechamento ou depois entra na seguinte; a parcela `k` cai `k - 1` meses após a primeira; vencimento no mesmo mês quando o dia é maior que o fechamento, senão no mês seguinte; dias inexistentes ajustados ao último dia do mês; o mês de referência é sempre o mês do vencimento.
+
+**Isolamento:** todo `SELECT`, `UPDATE` e `DELETE` filtra por `usuario_id` extraído do JWT; registro de outro usuário responde `404`.
+
+**Dinheiro:** `NUMERIC(14,2)` no banco, aritmética em centavos inteiros no servidor; a API devolve `valor` como string decimal e `valorCentavos` como inteiro.
+
+---
+
+## 11. Segurança aplicada
+
+- Senha com hash + salt (`bcryptjs`, 10 rodadas); nunca em texto puro.
+- `senha_hash` jamais retornado (garantido por `serializarUsuario` e coberto por teste).
+- Unicidade de e-mail e CPF garantida por `UNIQUE` no banco, com `409` identificando o campo.
+- CPF validado por dígitos verificadores, não apenas tamanho.
+- Consultas sempre parametrizadas.
+- CORS restrito à origem configurada.
 - Rate limiting na rota de login.
-- Valores monetários sem `float`: `NUMERIC` no banco e aritmética em centavos inteiros no servidor.
+- Erro inesperado responde `500` genérico; detalhes só no log do servidor.
+- `.env` fora do Git; `.env.example` versionado.
+
+---
+
+## 12. Limitações conhecidas
+
+- PostgreSQL local, sem deploy em nuvem.
+- Sem endpoint de logout: o front-end descarta o token.
+- Testes de integração exigem banco acessível; caso contrário são marcados como skip.

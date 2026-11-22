@@ -64,3 +64,68 @@ export function corpoDeErro(erro) {
 export function erroTratado(erro) {
   return erro instanceof ErroHttp;
 }
+
+/**
+ * Traduz violacoes de integridade do PostgreSQL em erros do contrato.
+ * O nome da constraint identifica qual campo causou o conflito, permitindo que
+ * o front-end exiba a mensagem no input correto.
+ */
+export function traduzirErroBanco(erro) {
+  if (erroTratado(erro)) return erro;
+
+  // Erros do parser de JSON do Express: nunca podem virar 500.
+  if (erro?.type === 'entity.parse.failed') {
+    return erroValidacao({}, 'Corpo da requisicao invalido: JSON malformado.');
+  }
+  if (erro?.type === 'entity.too.large') {
+    return new ErroHttp(413, 'Corpo da requisicao muito grande.');
+  }
+
+  const MENSAGENS_POR_CONSTRAINT = {
+    usuarios_email_unico: { campo: 'email', mensagem: 'Este e-mail ja esta cadastrado.' },
+    usuarios_cpf_unico: { campo: 'cpf', mensagem: 'Este CPF ja esta cadastrado.' },
+    categorias_nome_unico: { campo: 'nome', mensagem: 'Ja existe uma categoria com este nome para este tipo.' },
+    fontes_nome_unico: { campo: 'nome', mensagem: 'Ja existe uma fonte/destino com este nome.' },
+  };
+
+  if (erro?.code === '23505') {
+    const alvo = MENSAGENS_POR_CONSTRAINT[erro.constraint];
+    if (alvo) return erroConflito('Dados invalidos.', { [alvo.campo]: alvo.mensagem });
+    return erroConflito('Registro duplicado.');
+  }
+
+  if (erro?.code === '23503') {
+    return erroConflito('Nao e possivel concluir: existem registros associados a este item.');
+  }
+
+  if (erro?.code === '23514') {
+    return erroValidacao({}, 'Os dados violam uma regra de integridade.');
+  }
+
+  if (erro?.code === '22P02') {
+    return erroValidacao({}, 'Identificador ou valor em formato invalido.');
+  }
+
+  return erro;
+}
+
+/**
+ * Middleware central de erros do Express.
+ * Erro inesperado vira 500 generico; o detalhe fica apenas no log do servidor.
+ */
+export function middlewareDeErro(erro, req, res, proximo) {
+  const tratado = traduzirErroBanco(erro);
+  const { status, corpo } = corpoDeErro(tratado);
+
+  if (status >= 500) {
+    console.error(`[erro] ${req.method} ${req.originalUrl} -> ${erro?.message ?? erro}`);
+  }
+
+  if (res.headersSent) return proximo(erro);
+  return res.status(status).json(corpo);
+}
+
+/** Responde 404 para rotas inexistentes, no padrao unico de erro. */
+export function rotaNaoEncontrada(req, res) {
+  return res.status(404).json({ erro: 'Rota nao encontrada.' });
+}

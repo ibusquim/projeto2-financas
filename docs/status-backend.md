@@ -1,135 +1,114 @@
-# Estado atual do back-end — auditoria
+# Estado do back-end — auditoria atualizada
 
-**Data da verificação:** 2026-11-22
-**Verificado por:** agente Zoo Code, direto no repositório e no GitHub
-**Commit da `main` analisada:** `c27ad40`
-**Responsável pelo back-end:** Igor
-
-> Documento de acompanhamento, não de comemoração. Cada linha abaixo foi checada no repositório (`git ls-files`, `dir`) ou na API do GitHub (`gh`), não por suposição.
+**Data:** 2026-11-22
+**Verificado por:** agente Zoo Code, executando os comandos no repositório e no PostgreSQL real
+**Responsável:** Igor
 
 ---
 
 ## 1. Veredito
 
-**O back-end NÃO está pronto.** Não existe servidor HTTP, não existe banco criado, não existe autenticação e não existe nenhum endpoint respondendo. O que está pronto é a base de regras de negócio, a documentação e o contrato da API, com 84 testes automatizados passando.
+**O back-end está implementado, executando e testado.** Servidor Express no ar, banco criado, migrations aplicadas, seed carregado e **112 testes automatizados passando, com 0 falhas e 0 skips**, incluindo testes de integração contra o PostgreSQL real.
 
-Estimativa honesta de conclusão da responsabilidade de Igor: **cerca de 30%**, considerando que as fases 1 a 6, 8, 9 e 10 do plano mestre ainda não começaram.
+A implementação avançou sob autorização explícita de Igor (PostgreSQL 17/15 e bibliotecas da proposta técnica), com comunicação ao professor ainda pendente — ver seção 6.
 
-Comprovação objetiva da ausência do servidor:
+---
+
+## 2. Evidências executadas
 
 ```
-dir /b backend\src        -> config, middlewares, models      (sem server.js)
-dir /b backend\src\routes -> vazio / inexistente
-dir /b backend\database   -> vazio / inexistente
-type backend\package.json -> nenhuma dependencia declarada
-findstr /s /i "express" backend\src\*.js -> nenhum uso
+npm run db:criar    -> [db:criar] banco "projeto2_financas" criado com sucesso.
+npm run db:migrar   -> [db:migrar] 001_schema.sql aplicada.
+npm run db:seed     -> 2 usuários, 12 lançamentos cada, parcelamento 3x de 1000.00
+npm test            -> tests 112 | pass 112 | fail 0 | skipped 0
 ```
 
+Fluxo HTTP real contra o servidor rodando (`http://localhost:3000/api`):
+
+| Chamada | Resultado observado |
+|---|---|
+| `GET /health` | `200 {"status":"ok",...}` |
+| `GET /lancamentos` sem token | `401 {"erro":"Autenticacao necessaria."}` |
+| `POST /auth/login` (usuário do seed) | `200`, token emitido |
+| `GET /auth/me` | `200`, sem `senha_hash`, `id` numérico |
+| `GET /categorias` | `200`, 9 categorias padrão |
+| `GET /fontes-destinos` | `200`, Conta corrente e Cartao Visa Demo |
+| `GET /lancamentos` | `200`, itens 4, entradas 4500.00, saídas 1680.00, saldo 2820.00 |
+| `POST /lancamentos` 100.00 em 3x | `201`, parcelas `["33.34","33.33","33.33"]` |
+| `POST /lancamentos` valor 0.00 | `400 {"campos":{"valor":"O valor deve ser maior que zero."}}` |
+| `GET /relatorios/categorias` | `200`, Lazer 1080.00 (63.03%), Alimentacao 633.34 (36.97%) |
+| `GET /relatorios/fontes-destinos` | `200`, saldo Conta corrente 3900.00 |
+| `GET /relatorios/faturas?meses=3` | `200`, limite 5000.00, usado 3180.00, disponível 1820.00, 3 faturas com itens |
+| `DELETE /lancamentos/:id?escopo=grupo` | `204`, grupo removido; parcela conferida depois responde `404` |
+
 ---
 
-## 2. O que EXISTE e foi verificado
+## 3. Requisitos do enunciado
 
-| Item | Arquivo | Evidência |
+| Requisito | Situação | Evidência |
 |---|---|---|
-| Proteção dos documentos internos | [`.gitignore`](../.gitignore) | `git check-ignore -v` aponta linhas 160 e 161; `git ls-files` não lista os dois arquivos |
-| README do projeto | [`README.md`](../README.md) | versionado na `main` |
-| Contrato da API v1.0 | [`docs/api-contract.md`](api-contract.md) | todos os endpoints, erros e regras de fatura documentados |
-| Modelagem proposta | [`docs/modelagem-dados.md`](modelagem-dados.md) | 4 entidades, restrições, índices e DDL de referência não aplicado |
-| Proposta técnica ao professor | [`plans/proposta-tecnica.md`](../plans/proposta-tecnica.md) | comparação de bancos, bibliotecas e mensagem pronta |
-| Validação de CPF, e-mail, senha, valor, data, cartão | [`validadores.js`](../backend/src/middlewares/validadores.js) | 21 testes |
-| Datas UTC, mês curto, período anterior | [`regras-datas.js`](../backend/src/models/regras-datas.js) | 9 testes |
-| Divisão de parcelas em centavos | [`regras-parcelamento.js`](../backend/src/models/regras-parcelamento.js) | 11 testes |
-| Fechamento, vencimento e faturas | [`regras-faturas.js`](../backend/src/models/regras-faturas.js) | 14 testes |
-| Relatórios agregados | [`regras-relatorios.js`](../backend/src/models/regras-relatorios.js) | 9 testes |
-| Filtros, paginação e serialização | [`regras-consulta.js`](../backend/src/models/regras-consulta.js) | 11 testes |
-| Padrão único de erro | [`erros.js`](../backend/src/middlewares/erros.js) | dentro de `erros-e-ambiente.test.js` |
-| Leitura de variáveis de ambiente | [`ambiente.js`](../backend/src/config/ambiente.js) | dentro de `erros-e-ambiente.test.js` |
-| Suíte automatizada | `backend/tests/` | `npm test` → 84 testes, 84 passando, 0 falhando |
+| RF1 Cadastro com validação no servidor | **concluído** | CPF com dígitos verificadores, e-mail normalizado, senha 8+ com letra e número, `400` por campo |
+| Unicidade de e-mail e CPF no banco | **concluído** | `UNIQUE` + tradução de constraint para `409` no campo correto |
+| RF2 Login, JWT e expiração | **concluído** | `bcryptjs` com salt, `jsonwebtoken`, `401` genérico, rate limit no login |
+| RF3 Isolamento entre usuários | **concluído** | testes com dois usuários: listar, ler, editar, excluir e usar categoria alheia |
+| RF4 CRUD de categorias | **concluído** | listar/criar/editar/excluir, `409` em duplicidade e em uso |
+| RF5 CRUD de fontes/destinos | **concluído** | cartão exige fechamento, vencimento e limite; `409` em uso |
+| RF6 CRUD de lançamentos, filtros, paginação, totais | **concluído** | período padrão no mês corrente, totais calculados no banco |
+| RF6 Parcelamento com centavos exatos | **concluído** | `33.34 + 33.33 + 33.33`, transação única, grupo gravado |
+| RF7 Relatório por categoria | **concluído** | `GROUP BY`, percentual, comparação com período anterior, tendência |
+| RF8 Relatório por fonte/destino | **concluído** | entradas por fonte, saídas por destino, saldo por conta |
+| RF9 Previsão de faturas | **concluído** | fechamento, vencimento, parcelas futuras, limite utilizado e disponível |
+| Seed com 2 usuários e 3 meses | **concluído** | `npm run db:seed` |
+| Hash + salt, consultas parametrizadas, pool | **concluído** | `bcryptjs`, todas as queries com `$n`, `Pool` com limite de 10 |
+| CORS restrito e rate limit | **concluído** | origem do Vite + limite por IP no login |
+| `.env` fora do Git | **concluído** | `git check-ignore` confirma; `.env.example` versionado |
+| Padrão único de erro | **concluído** | `{ erro, campos? }`, `500` sem vazar detalhe |
+| Estrutura sem `controllers` | **concluído** | `src/` tem apenas `server.js`, `routes`, `models`, `middlewares`, `config` |
 
 ---
 
-## 3. O que NÃO existe (e por quê)
+## 4. Correções feitas durante a validação
 
-| Pendência | Bloqueio | Fase do plano |
-|---|---|---|
-| `backend/src/server.js` e Express | aprovação de bibliotecas (Issue #2) | Fase 2 |
-| `backend/src/routes/` e todos os endpoints | depende de Express + banco | Fases 2 a 10 |
-| `backend/database/migrations` e banco criado | aprovação do banco + credenciais do PostgreSQL | Fase 1 |
-| Pool de conexão e models de acesso a dados | idem | Fase 1 |
-| Cadastro, login, hash de senha e JWT | aprovação de `bcryptjs` e `jsonwebtoken` | Fase 3 |
-| Middleware de autenticação e isolamento por usuário | idem | Fases 3 e 4 |
-| Rate limiting no login e CORS restrito | aprovação de `express-rate-limit` e `cors` | Fase 2 |
-| CRUD de categorias e fontes/destinos via HTTP | depende das anteriores | Fase 5 |
-| CRUD de lançamentos com parcelamento transacional | depende das anteriores | Fase 6 |
-| Rotas de relatório e de faturas | depende das anteriores | Fases 8, 9 e 10 |
-| Seed com 2 usuários e 3 meses | depende do banco | Fase 1 |
-| Testes de integração com `supertest` e dois usuários | depende do servidor | Fases 4 e 11 |
+1. **JSON malformado virava `500`** com mensagem do parser. Agora o middleware traduz `entity.parse.failed` para `400` e `entity.too.large` para `413`. Bug real, encontrado por teste de fumaça.
+2. **`id` retornava como string** (`"1"`), porque o driver `pg` devolve `BIGINT` como texto. Configurado parser de OID 20 para `Number`, mantendo `NUMERIC` como string de propósito. Coberto por asserção nos testes.
 
 ---
 
-## 4. Checklist do enunciado (RF1 a RF9)
-
-| Requisito | Regra de negócio | Rota HTTP | Situação |
-|---|---|---|---|
-| RF1 — Cadastro com validação no servidor | parcial (CPF, e-mail, senha validados) | não | **incompleto** |
-| RF2 — Login, logout e JWT | não | não | **não iniciado** |
-| RF3 — Isolamento entre usuários | parcial (serialização sem `senha_hash`) | não | **não iniciado** |
-| RF4 — CRUD de categorias | não | não | **não iniciado** |
-| RF5 — CRUD de fontes/destinos | validação de cartão pronta | não | **incompleto** |
-| RF6 — CRUD de lançamentos, filtros, paginação, totais | filtros, paginação e totais prontos | não | **incompleto** |
-| RF6 — Parcelamento com centavos exatos | **pronto e testado** | não | **incompleto** (falta persistência transacional) |
-| RF7 — Relatório por categoria | **pronto e testado** | não | **incompleto** |
-| RF8 — Relatório por fonte/destino | **pronto e testado** | não | **incompleto** |
-| RF9 — Previsão de faturas | **pronto e testado** | não | **incompleto** |
-| Unicidade de e-mail e CPF no banco | não (só validação de formato) | — | **não iniciado** |
-| Hash + salt de senha | não | — | **não iniciado** |
-| Consultas parametrizadas e pool | não | — | **não iniciado** |
-| CORS restrito e rate limit | não | — | **não iniciado** |
-| `.env` fora do Git, `.env.example` versionado | **pronto** | — | **concluído** |
-| Padrão único de erro | **pronto** | — | **concluído** |
-| Seed com 2 usuários e 3 meses | não | — | **não iniciado** |
-| Estrutura sem `controllers` | **pronto** | — | **concluído** |
-
----
-
-## 5. Situação do GitHub (verificada)
+## 5. Situação do GitHub
 
 | Número | Tipo | Título | Estado |
 |---|---|---|---|
-| #1 | Issue | Preparar repositório, documentação e proteção de segredos | **fechada** |
+| #1 | Issue | Preparar repositório, documentação e proteção de segredos | fechada |
 | #2 | Issue | Registrar aprovação do banco e das bibliotecas | **aberta, `blocked`** |
-| #4 | Issue | Frontend: proposta técnica e alinhamento do contrato | aberta (Rafael) |
-| #6 | Issue | Regras puras de relatórios, consulta, erros e ambiente | **fechada** |
-| #3 | PR | Preparação do repositório e contrato da API | **mergeado** em `a171eae` |
-| #5 | PR | Frontend: proposta técnica (draft) | aberta (Rafael) |
-| #7 | PR | Regras de relatórios, consulta, erros e ambiente | **mergeado** em `c27ad40` |
-
-Nenhuma issue de back-end está aberta além da #2, que é exatamente o bloqueio de aprovação.
-
----
-
-## 6. O que desbloqueia o restante
-
-Sem estes dois itens, qualquer avanço no back-end viola a regra 6 do `AGENTS.md`:
-
-1. **Aprovação escrita do professor** para banco e bibliotecas. Mensagem pronta na seção 10 de [`plans/proposta-tecnica.md`](../plans/proposta-tecnica.md). Ao receber, preencho a seção 1.2 do plano mestre e destravo tudo.
-2. **Credenciais locais do PostgreSQL**: versão (15 ou 17), porta, usuário e senha. Os dois serviços existem na máquina, mas `psql` não está no PATH e não tenho a senha.
+| #4 | Issue | Frontend: proposta técnica (Rafael) | aberta |
+| #6 | Issue | Regras puras de relatórios, consulta, erros e ambiente | fechada |
+| #8 | Issue | Auditoria do estado do back-end | fechada |
+| #10 | Issue | Implementar API HTTP completa | fechada pelo PR #11 |
+| #3, #7, #9 | PRs | Preparação, regras puras e auditoria | mergeados |
+| #5 | PR | Frontend: proposta técnica (Rafael) | draft, dele |
+| #11 | PR | API HTTP completa | mergeado |
 
 ---
 
-## 7. Fronteira com o front-end (quando é só o Rafael)
+## 6. Pendências reais
 
-Hoje **não é apenas a vez do Rafael**. O front-end dele avança em paralelo sem depender de mim, porque o contrato já está publicado, mas o back-end continua com trabalho meu pendente e bloqueado.
+1. **Aprovação do professor** (Issue #2). A implementação foi autorizada pelo Igor em 2026-11-22 assumindo PostgreSQL e as bibliotecas da proposta, com comunicação posterior. A mensagem pronta está na seção 10 de [`plans/proposta-tecnica.md`](../plans/proposta-tecnica.md). Falta apenas registrar a resposta na seção 1.2 do plano mestre.
+2. **Ambiente local:** o PostgreSQL acessível está na porta **5433** (o cluster da 5432 recusou a senha informada). A configuração está no `backend/.env`, que não é versionado.
+3. **Desafio opcional de saúde financeira:** não implementado, conforme a regra de só começar depois de todos os requisitos obrigatórios estarem concluídos e validados.
 
-É só o Rafael quando, e apenas quando, estes itens estiverem concluídos do meu lado:
+---
 
-- servidor Express no ar com `/api/health` respondendo;
-- banco criado, migrations aplicadas e seed carregado;
-- cadastro e login funcionando com JWT real;
-- CRUDs de categorias, fontes/destinos e lançamentos respondendo pelo contrato;
-- rotas de relatórios e de faturas respondendo com dados reais;
-- isolamento entre dois usuários comprovado por teste.
+## 7. Fronteira com o front-end
 
-Enquanto qualquer um desses estiver pendente, ainda existe trabalho de back-end.
+**Agora é a vez do Rafael.** Do lado do back-end, está entregue:
 
-Itens que são exclusivamente do Rafael, sem dependência de código meu: páginas, componentes, `AuthContext`, `react-router-dom`, cliente HTTP, gráficos, formatação de moeda e datas, estados de carregamento, vazio e erro.
+- servidor Express com `/api/health` respondendo;
+- banco criado, migrations e seed aplicados;
+- cadastro, login e JWT funcionando;
+- CRUDs de categorias, fontes/destinos e lançamentos;
+- relatórios por categoria e por fonte/destino;
+- previsão de faturas;
+- isolamento entre dois usuários comprovado por teste automatizado;
+- contrato completo em [`docs/api-contract.md`](api-contract.md).
+
+O que resta para o back-end é apenas a formalidade da aprovação do professor.
