@@ -22,8 +22,21 @@ export const app = express();
 
 app.disable('x-powered-by');
 
-// CORS restrito a origem autorizada do front-end.
-app.use(cors({ origin: ambiente.corsOrigem }));
+/**
+ * CORS restrito às origens autorizadas do front-end.
+ * Aceita lista em CORS_ORIGIN, separada por vírgula, para cobrir `localhost` e
+ * `127.0.0.1` — sem isso o navegador bloqueia a chamada dependendo de como a
+ * pessoa abriu a página. Requisições sem `Origin` (curl, testes, health) passam.
+ */
+app.use(
+  cors({
+    origin(origem, aceitar) {
+      if (!origem) return aceitar(null, true);
+      if (ambiente.corsOrigens.includes(origem)) return aceitar(null, true);
+      return aceitar(null, false);
+    },
+  }),
+);
 
 app.use(express.json({ limit: '100kb' }));
 

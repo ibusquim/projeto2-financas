@@ -90,6 +90,26 @@ test('login com corpo vazio responde 400', async () => {
   assert.ok(resposta.body.campos.senha);
 });
 
+test('CORS libera localhost e 127.0.0.1 na porta 5173', async () => {
+  for (const origem of ['http://localhost:5173', 'http://127.0.0.1:5173']) {
+    const preflight = await request(app)
+      .options('/api/auth/login')
+      .set('Origin', origem)
+      .set('Access-Control-Request-Method', 'POST');
+
+    assert.equal(preflight.headers['access-control-allow-origin'], origem, `origem ${origem} deveria ser liberada`);
+  }
+});
+
+test('CORS bloqueia origem nao autorizada', async () => {
+  const preflight = await request(app)
+    .options('/api/auth/login')
+    .set('Origin', 'http://site-desconhecido.example')
+    .set('Access-Control-Request-Method', 'POST');
+
+  assert.equal(preflight.headers['access-control-allow-origin'], undefined);
+});
+
 test('JSON malformado responde 400 sem stack trace', async () => {
   const resposta = await request(app)
     .post('/api/auth/login')
