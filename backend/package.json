@@ -1,0 +1,15 @@
+{
+  "name": "projeto2-fullstack-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST de controle financeiro pessoal - Projeto 2 Full Stack",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  }
+}
