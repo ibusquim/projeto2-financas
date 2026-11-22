@@ -117,7 +117,7 @@ Health check: `GET http://localhost:3000/api/health`
 | Variável | Descrição |
 |---|---|
 | `PORT` | Porta da API (padrão `3000`) |
-| `CORS_ORIGIN` | Origem autorizada do front-end (padrão `http://localhost:5173`) |
+| `CORS_ORIGIN` | Origens autorizadas do front-end, separadas por vírgula (padrão `http://localhost:5173,http://127.0.0.1:5173`) |
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | Conexão PostgreSQL |
 | `JWT_SECRET` | Segredo do JWT, mínimo de 32 caracteres |
 | `JWT_EXPIRACAO` | Validade do token (padrão `2h`) |
@@ -153,7 +153,7 @@ npm run build   # build de produção em dist/
 npm run lint    # oxlint
 ```
 
-O front-end espera a API em `http://localhost:3000/api` e depende de o back-end liberar `http://localhost:5173` no CORS (valor padrão de `CORS_ORIGIN`).
+O front-end espera a API em `http://localhost:3000/api` e depende de o back-end liberar a origem usada no navegador. O padrão de `CORS_ORIGIN` já cobre `http://localhost:5173` e `http://127.0.0.1:5173`, porque o navegador envia no `Origin` exatamente o endereço aberto na barra.
 
 Telas disponíveis: login, cadastro, painel, lançamentos com filtros e parcelamento, categorias, fontes/destinos, relatório por categoria, relatório por fonte/destino e faturas. Rotas internas redirecionam para o login quando não há sessão válida; qualquer `401` limpa o token e volta ao login.
 
