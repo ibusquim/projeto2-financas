@@ -42,7 +42,7 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 
 **Back-end:** Node.js 20+, Express 5, PostgreSQL (driver `pg` com pool), `bcryptjs` (hash + salt), `jsonwebtoken`, `express-rate-limit`, `cors`, `dotenv`. Testes com `node:test` + `supertest`.
 
-**Front-end:** React 19 + Vite 8 + `react-router-dom`. Gráficos em CSS puro, porque nenhuma biblioteca de gráficos foi aprovada até o momento.
+**Front-end:** React 19 + Vite 8 + `react-router-dom`. Gráficos implementados em CSS, alimentados pelos dados agregados do servidor, sem dependência adicional.
 
 ---
 
@@ -91,6 +91,8 @@ Não existe `backend/src/controllers`: os controladores ficam nos arquivos de ro
 - npm 10+
 
 ---
+
+> Guia completo, partindo de um ambiente limpo, com verificação da persistência no banco: [`docs/como-executar.md`](docs/como-executar.md).
 
 ## 6. Como executar o back-end
 
@@ -262,5 +264,5 @@ Resposta da compra parcelada:
 - PostgreSQL local, sem deploy em nuvem.
 - Sem endpoint de logout: o front-end descarta o token.
 - Testes de integração exigem banco acessível; caso contrário são marcados como skip.
-- Gráficos dos relatórios são barras em CSS, sem biblioteca externa, até a aprovação do professor.
-- Testes automatizados do front-end não foram incluídos: nenhuma biblioteca de testes foi aprovada. A camada de serviços foi validada manualmente contra um mock do contrato.
+- Gráficos dos relatórios são barras em CSS, sem biblioteca externa.
+- Testes automatizados de componentes do front-end não foram incluídos: a camada de serviços foi validada contra a API real durante o teste de integração.
