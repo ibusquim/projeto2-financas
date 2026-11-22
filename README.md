@@ -17,6 +17,7 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 - Relatório por categoria com percentual e comparação ao período anterior.
 - Relatório por fonte/destino com saldo por conta.
 - Previsão de faturas de cartão com fechamento, vencimento, parcelas futuras e limite utilizado.
+- Página de **saúde financeira** (desafio): indicadores, projeção de saldo e dicas, todos calculados no servidor.
 
 ---
 
@@ -32,9 +33,10 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 | CRUDs de categorias, fontes/destinos e lançamentos | Concluídos |
 | Parcelamento transacional com centavos exatos | Concluído |
 | Relatórios e previsão de faturas | Concluídos |
-| Testes automatizados | **114 passando, 0 falhando** |
+| Testes automatizados | **129 passando, 0 falhando** |
 | Testes de integração com banco real | Concluídos, incluindo isolamento entre dois usuários |
-| Front-end | Concluído: autenticação, CRUDs, dashboard, relatórios e faturas |
+| Front-end | Concluído: autenticação, CRUDs, dashboard, relatórios, faturas e saúde financeira |
+| Desafio opcional — saúde financeira | Concluído: 5 indicadores, projeção de 6 meses, dicas e aviso educativo |
 
 ---
 
@@ -42,7 +44,7 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 
 **Back-end:** Node.js 20+, Express 5, PostgreSQL (driver `pg` com pool), `bcryptjs` (hash + salt), `jsonwebtoken`, `express-rate-limit`, `cors`, `dotenv`. Testes com `node:test` + `supertest`.
 
-**Front-end:** React 19 + Vite 8 + `react-router-dom`. Gráficos implementados em CSS, alimentados pelos dados agregados do servidor, sem dependência adicional.
+**Front-end:** React 19 + Vite 8 + `react-router-dom` + `recharts` (gráficos dos relatórios e da projeção de saldo).
 
 ---
 
@@ -194,6 +196,7 @@ Todas as rotas exigem `Authorization: Bearer <token>`, exceto cadastro, login e 
 | GET | `/api/relatorios/categorias` | Relatório por categoria |
 | GET | `/api/relatorios/fontes-destinos` | Relatório por fonte/destino |
 | GET | `/api/relatorios/faturas?meses=3` | Previsão de faturas |
+| GET | `/api/saude-financeira` | Desafio: indicadores, projeção de saldo e dicas |
 
 Contrato detalhado, com corpos, exemplos e códigos de erro: [`docs/api-contract.md`](docs/api-contract.md).
 
@@ -245,6 +248,16 @@ Resposta da compra parcelada:
 
 ---
 
+## 10.1 Organização das regras de negócio
+
+O enunciado permite que funções utilitárias puras fiquem em `models/`, desde que a decisão fique documentada — está registrada aqui:
+
+- Os arquivos `models/regras-*.js` são **funções puras de negócio**, sem SQL e sem dependência de biblioteca: validação de CPF, divisão de parcelas em centavos, cálculo de fechamento e vencimento de faturas, agregações de relatório, paginação e os indicadores de saúde financeira.
+- Os arquivos `models/*.model.js` são os **únicos que acessam o banco**.
+- `middlewares/validadores.js` concentra validações e conversões de entrada usadas por rotas e models.
+- Esse formato permite testar cada regra isoladamente: a suíte tem 129 testes, sendo a maior parte em cima dessas funções puras.
+- O cálculo de fatura segue a regra do enunciado e o mês de referência de cada fatura é sempre o mês do **vencimento**.
+
 ## 11. Segurança aplicada
 
 - Senha com hash + salt (`bcryptjs`, 10 rodadas); nunca em texto puro.
@@ -264,5 +277,5 @@ Resposta da compra parcelada:
 - PostgreSQL local, sem deploy em nuvem.
 - Sem endpoint de logout: o front-end descarta o token.
 - Testes de integração exigem banco acessível; caso contrário são marcados como skip.
-- Gráficos dos relatórios são barras em CSS, sem biblioteca externa.
+- A projeção de saldo é uma estimativa baseada na média dos últimos meses e nas parcelas já contratadas; não considera receitas ou despesas futuras ainda não lançadas.
 - Testes automatizados de componentes do front-end não foram incluídos: a camada de serviços foi validada contra a API real durante o teste de integração.

@@ -8,7 +8,7 @@
 
 ## 1. Veredito
 
-**O back-end está implementado, executando e testado.** Servidor Express no ar, banco criado, migrations aplicadas, seed carregado e **112 testes automatizados passando, com 0 falhas e 0 skips**, incluindo testes de integração contra o PostgreSQL real.
+**O back-end está implementado, executando e testado**, incluindo o desafio opcional de saúde financeira. Servidor Express no ar, banco criado, migrations aplicadas, seed carregado e **129 testes automatizados passando, com 0 falhas e 0 skips**, incluindo testes de integração contra o PostgreSQL real.
 
 A implementação avançou sob autorização explícita de Igor (PostgreSQL 17/15 e bibliotecas da proposta técnica), com comunicação ao professor ainda pendente — ver seção 6.
 

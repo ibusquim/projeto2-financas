@@ -193,6 +193,7 @@ Após o login, recomenda-se a seguinte sequência para comprovar o funcionamento
 3. **Faturas**: a compra parcelada deve aparecer distribuída nas faturas seguintes, com o rótulo de parcela, além de limite utilizado e disponível.
 4. **Relatórios**: selecionar um período e conferir totais, percentuais, comparação com o período anterior e gráficos.
 5. **Categorias**: criar uma categoria e tentar repetir o mesmo nome para o mesmo tipo. A API responde `409` e a mensagem é exibida junto ao campo.
+6. **Saúde financeira** (desafio): abrir o item correspondente no menu. A página exibe cinco indicadores calculados no servidor, a projeção de saldo de seis meses em gráfico, as categorias fora da curva, as dicas e o aviso educativo.
 
 ---
 
@@ -347,3 +348,4 @@ for /f "tokens=5" %a in ('netstat -ano ^| findstr :5173 ^| findstr LISTENING') d
 6. Consulta direta ao banco, no `pgAdmin`, confirmando a soma exata das parcelas e o hash da senha.
 7. Tentativa de cadastro com e-mail repetido, demonstrando a resposta `409` no campo correto.
 8. Requisição a uma rota protegida sem token, demonstrando a resposta `401`.
+9. Abertura da página de saúde financeira, mostrando os indicadores, a projeção em gráfico e as dicas calculadas no servidor.

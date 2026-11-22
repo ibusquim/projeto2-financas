@@ -13,6 +13,7 @@ import LoginPage from './components/pages/LoginPage.jsx'
 import NotFoundPage from './components/pages/NotFoundPage.jsx'
 import RelatorioCategoriasPage from './components/pages/RelatorioCategoriasPage.jsx'
 import RelatorioFontesDestinosPage from './components/pages/RelatorioFontesDestinosPage.jsx'
+import SaudeFinanceiraPage from './components/pages/SaudeFinanceiraPage.jsx'
 
 import './App.css'
 
@@ -37,6 +38,7 @@ export default function App() {
             element={<RelatorioFontesDestinosPage />}
           />
           <Route path="/faturas" element={<FaturasPage />} />
+          <Route path="/saude-financeira" element={<SaudeFinanceiraPage />} />
         </Route>
       </Route>
 

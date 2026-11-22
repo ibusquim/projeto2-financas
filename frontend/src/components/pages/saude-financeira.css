@@ -1,0 +1,97 @@
+.saude-aviso {
+  border-left: 4px solid #b54708;
+  background: #fffaeb;
+  color: #7a2e0e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.saude-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.saude-indicador {
+  border: 1px solid #e4e7ec;
+  border-radius: 10px;
+  padding: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.saude-indicador__cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.saude-indicador__titulo {
+  font-size: 0.95rem;
+  margin: 0;
+  color: #344054;
+}
+
+.saude-indicador__valor {
+  font-size: 1.5rem;
+  color: #101828;
+}
+
+.saude-indicador__explicacao {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #667085;
+  line-height: 1.4;
+}
+
+.saude-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.saude-badge--otima,
+.saude-badge--saudavel {
+  background: #ecfdf3;
+  color: #067647;
+}
+
+.saude-badge--boa {
+  background: #eff8ff;
+  color: #175cd3;
+}
+
+.saude-badge--baixa,
+.saude-badge--atencao {
+  background: #fffaeb;
+  color: #b54708;
+}
+
+.saude-badge--critica,
+.saude-badge--critico {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.saude-badge--sem-dados {
+  background: #f2f4f7;
+  color: #475467;
+}
+
+.saude-dicas {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #344054;
+}
