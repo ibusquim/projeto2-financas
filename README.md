@@ -103,7 +103,8 @@ cd backend
 npm install
 
 # copie o arquivo de exemplo e preencha com os valores locais
-cp .env.example .env
+# Windows (cmd):      copy .env.example .env
+# macOS / Linux:      cp .env.example .env
 # edite DB_PASSWORD e gere um JWT_SECRET forte:
 #   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 
@@ -138,8 +139,10 @@ cd backend
 npm test
 ```
 
-- Testes puros de regra de negócio e de fumaça HTTP rodam sempre.
-- Testes de integração com banco rodam quando o PostgreSQL estiver acessível; caso contrário são marcados como `skipped`, para não confundir falta de ambiente com bug.
+- O `.env` precisa estar preenchido antes de rodar os testes; sem ele a API recusa iniciar e a mensagem lista quais variáveis faltam.
+- Testes puros de regra de negócio rodam sempre.
+- Testes de fumaça HTTP e de integração exigem `.env` e banco preparado (`npm run db:preparar`). Sem banco acessível, os de integração são marcados como `skipped`.
+- Resultado de referência: `129` testes, `129` aprovados, `0` falhas.
 
 ---
 
