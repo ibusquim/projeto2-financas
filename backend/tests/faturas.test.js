@@ -141,7 +141,7 @@ test('previsaoFaturas devolve a fatura atual, as proximas e o limite disponivel'
   assert.equal(previsao.limiteDisponivelCentavos, 490000);
 });
 
-test('previsao de cartao sem compras nao quebra e nao consome limite', () => {
+test('previsao de cartao sem compras mostra a fatura corrente vazia e nao consome limite', () => {
   const previsao = previsaoFaturas({
     parcelas: [],
     ...NUBANK,
@@ -149,7 +149,11 @@ test('previsao de cartao sem compras nao quebra e nao consome limite', () => {
     dataReferencia: '2026-11-05',
   });
 
-  assert.deepEqual(previsao.faturas, []);
+  // Em 05/11 a fatura que ainda recebe compras (aberta) fecha em 03/12.
+  assert.equal(previsao.faturas.length, 1);
+  assert.equal(previsao.faturas[0].mesReferencia, '2026-12');
+  assert.equal(previsao.faturas[0].totalCentavos, 0);
+  assert.deepEqual(previsao.faturas[0].itens, []);
   assert.equal(previsao.limiteUtilizadoCentavos, 0);
   assert.equal(previsao.limiteDisponivelCentavos, 100000);
 });

@@ -182,6 +182,30 @@ export function somarParcelasNaoVencidas({ parcelas, diaFechamento, diaVenciment
  */
 export function previsaoFaturas({ parcelas, diaFechamento, diaVencimento, limiteCentavos, dataReferencia, quantidadeFaturas = 3 }) {
   const todas = agruparParcelasPorFatura({ parcelas, diaFechamento, diaVencimento, dataReferencia });
+
+  // A fatura corrente precisa aparecer mesmo quando o cartao ainda nao tem
+  // compras: sem isso o usuario nao ve a fatura aberta do mes.
+  if (dataReferencia) {
+    const corrente = calcularFatura({
+      dataCompra: dataReferencia,
+      diaFechamento,
+      diaVencimento,
+      parcelaAtual: 1,
+    });
+
+    const jaExiste = todas.some((fatura) => fatura.mesReferencia === corrente.mesReferencia);
+    if (!jaExiste) {
+      todas.push({
+        mesReferencia: corrente.mesReferencia,
+        fechamento: corrente.fechamento,
+        vencimento: corrente.vencimento,
+        totalCentavos: 0,
+        itens: [],
+      });
+      todas.sort((a, b) => a.mesReferencia.localeCompare(b.mesReferencia));
+    }
+  }
+
   const utilizadas = somarParcelasNaoVencidas({ parcelas, diaFechamento, diaVencimento, dataReferencia });
 
   const primeiraFutura = todas.findIndex((fatura) => fatura.vencimento >= dataReferencia);

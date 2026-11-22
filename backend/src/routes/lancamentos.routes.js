@@ -113,11 +113,20 @@ rotas.post('/', async (req, res) => {
     return res.status(201).json(criado);
   }
 
-  const resultado = await lancamentos.criarParcelado({
-    usuarioId: req.usuarioId,
-    ...dados,
-    totalParcelas,
-  });
+  let resultado;
+  try {
+    resultado = await lancamentos.criarParcelado({
+      usuarioId: req.usuarioId,
+      ...dados,
+      totalParcelas,
+    });
+  } catch (erro) {
+    // Valor insuficiente para gerar parcelas com pelo menos 1 centavo.
+    if (erro instanceof RangeError) {
+      throw erroValidacao({ parcelas: erro.message });
+    }
+    throw erro;
+  }
 
   return res.status(201).json(resultado);
 });
@@ -140,6 +149,13 @@ rotas.put('/:id', async (req, res) => {
 
   const existente = await lancamentos.buscarPorId(req.usuarioId, id);
   if (!existente) throw erroNaoEncontrado();
+
+  // Editar uma parcela isolada quebraria a soma do grupo de parcelamento.
+  if (existente.grupoParcelamento) {
+    throw erroValidacao({
+      id: 'Este lancamento faz parte de uma compra parcelada. Para alterar, exclua o grupo com DELETE ?escopo=grupo e crie novamente.',
+    });
+  }
 
   if (req.body?.parcelas !== undefined && Number(req.body.parcelas) > 1) {
     throw erroValidacao({
