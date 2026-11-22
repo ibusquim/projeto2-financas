@@ -71,10 +71,17 @@ export function carregarAmbiente(env = process.env) {
     throw erro;
   }
 
+  const origensPadrao = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+  const origens = (env.CORS_ORIGIN ?? origensPadrao.join(','))
+    .split(',')
+    .map((origem) => origem.trim())
+    .filter(Boolean);
+
   return {
     nodeEnv: env.NODE_ENV ?? 'development',
     porta: inteiroOuPadrao(env.PORT, 3000),
-    corsOrigem: env.CORS_ORIGIN ?? 'http://localhost:5173',
+    corsOrigem: origens[0],
+    corsOrigens: origens,
     banco: {
       host: env.DB_HOST,
       porta: inteiroOuPadrao(env.DB_PORT, 5432),

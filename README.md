@@ -32,8 +32,8 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 | CRUDs de categorias, fontes/destinos e lançamentos | Concluídos |
 | Parcelamento transacional com centavos exatos | Concluído |
 | Relatórios e previsão de faturas | Concluídos |
-| Testes unitários e de fumaça HTTP | **93 passando, 0 falhando** |
-| Testes de integração com banco | 19 escritos, aguardando credenciais do PostgreSQL |
+| Testes automatizados | **114 passando, 0 falhando** |
+| Testes de integração com banco real | Concluídos, incluindo isolamento entre dois usuários |
 | Front-end | Concluído: autenticação, CRUDs, dashboard, relatórios e faturas |
 
 ---
