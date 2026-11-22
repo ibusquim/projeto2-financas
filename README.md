@@ -34,7 +34,7 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 | Relatórios e previsão de faturas | Concluídos |
 | Testes unitários e de fumaça HTTP | **93 passando, 0 falhando** |
 | Testes de integração com banco | 19 escritos, aguardando credenciais do PostgreSQL |
-| Front-end | Responsabilidade do Rafael |
+| Front-end | Concluído: autenticação, CRUDs, dashboard, relatórios e faturas |
 
 ---
 
@@ -42,7 +42,7 @@ O usuário se cadastra, entra no sistema e registra movimentações. Cada lança
 
 **Back-end:** Node.js 20+, Express 5, PostgreSQL (driver `pg` com pool), `bcryptjs` (hash + salt), `jsonwebtoken`, `express-rate-limit`, `cors`, `dotenv`. Testes com `node:test` + `supertest`.
 
-**Front-end:** React + Vite + `react-router-dom` + `recharts` (responsabilidade do Rafael).
+**Front-end:** React 19 + Vite 8 + `react-router-dom`. Gráficos em CSS puro, porque nenhuma biblioteca de gráficos foi aprovada até o momento.
 
 ---
 
@@ -72,7 +72,12 @@ projeto2-fullstack/
 │       ├── middlewares/        # JWT, rate limit, validadores, erros
 │       ├── models/             # único ponto de acesso ao banco
 │       └── routes/             # rotas + controladores
-└── frontend/                   # responsabilidade do Rafael
+└── frontend/
+    ├── .env.example             # VITE_API_URL
+    └── src/
+        ├── components/          # páginas, layout e componentes de UI
+        ├── contexts/            # AuthProvider e useAuth
+        └── services/            # cliente HTTP e serviços por recurso
 ```
 
 Não existe `backend/src/controllers`: os controladores ficam nos arquivos de rotas, conforme o enunciado.
@@ -131,6 +136,26 @@ npm test
 
 - Testes puros de regra de negócio e de fumaça HTTP rodam sempre.
 - Testes de integração com banco rodam quando o PostgreSQL estiver acessível; caso contrário são marcados como `skipped`, para não confundir falta de ambiente com bug.
+
+---
+
+## 7.1 Como executar o front-end
+
+```bash
+cd frontend
+npm install
+
+# opcional: ajuste a URL da API
+cp .env.example .env
+
+npm run dev     # http://localhost:5173
+npm run build   # build de produção em dist/
+npm run lint    # oxlint
+```
+
+O front-end espera a API em `http://localhost:3000/api` e depende de o back-end liberar `http://localhost:5173` no CORS (valor padrão de `CORS_ORIGIN`).
+
+Telas disponíveis: login, cadastro, painel, lançamentos com filtros e parcelamento, categorias, fontes/destinos, relatório por categoria, relatório por fonte/destino e faturas. Rotas internas redirecionam para o login quando não há sessão válida; qualquer `401` limpa o token e volta ao login.
 
 ---
 
@@ -237,3 +262,5 @@ Resposta da compra parcelada:
 - PostgreSQL local, sem deploy em nuvem.
 - Sem endpoint de logout: o front-end descarta o token.
 - Testes de integração exigem banco acessível; caso contrário são marcados como skip.
+- Gráficos dos relatórios são barras em CSS, sem biblioteca externa, até a aprovação do professor.
+- Testes automatizados do front-end não foram incluídos: nenhuma biblioteca de testes foi aprovada. A camada de serviços foi validada manualmente contra um mock do contrato.

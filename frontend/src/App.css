@@ -105,6 +105,23 @@
   white-space: nowrap;
 }
 
+.app-topo__usuario {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-topo__nome {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cor-texto);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
 .app-conteudo {
   padding: 32px;
 }
@@ -149,5 +166,9 @@
 
   .app-conteudo {
     padding-block: 24px;
+  }
+
+  .app-topo__nome {
+    display: none;
   }
 }
